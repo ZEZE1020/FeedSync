@@ -1,4 +1,4 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3001';
+const API_BASE = process.env.FEED_SYNC_API_BASE_URL ?? process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3001';
 
 export interface ForecastDay {
   date: string;
@@ -63,7 +63,7 @@ export interface FeedPlanSummary {
 
 export interface DashboardSummary {
   generated_at: string;
-  data_mode: 'demo';
+  data_mode: 'operational';
   metrics: DashboardMetrics;
   water_context: WaterContextResponse | null;
   context_error: string | null;
@@ -83,4 +83,51 @@ export async function getDashboardSummary(
     throw new Error(`Dashboard fetch failed: ${response.status}`);
   }
   return response.json() as Promise<DashboardSummary>;
+}
+
+export interface CultureUnit {
+  id: string; name: string; kind: 'cage' | 'pond'; species: string;
+  stocked_fish_count: number; estimated_biomass_kg: number; geometry_label: string;
+  latest_temperature_c: number | null; health_status: 'attention' | 'healthy' | 'review';
+}
+
+export interface Device {
+  id: string; culture_unit_name: string; name: string; kind: string; status: 'online' | 'offline';
+  latest_state: string; battery_label: string; last_seen_at: string;
+}
+
+async function getJson<T>(path: string): Promise<T> {
+  const response = await fetch(`${API_BASE}${path}`, { cache: 'no-store' });
+  if (!response.ok) throw new Error(`API request failed: ${response.status}`);
+  return response.json() as Promise<T>;
+}
+
+export const getCultureUnits = () => getJson<CultureUnit[]>('/v1/culture-units');
+export const getFeedPlans = () => getJson<FeedPlanSummary[]>('/v1/feed-plans');
+export const getDevices = () => getJson<Device[]>('/v1/devices');
+
+export interface CopilotBriefing {
+  generated_at: string;
+  headline: string;
+  summary: string;
+  priority: 'normal' | 'attention';
+  confidence: string;
+  actions: { label: string; href: string }[];
+  evidence: { label: string; value: string }[];
+}
+
+export async function getCopilotBriefing(): Promise<CopilotBriefing> {
+  try {
+    return await getJson<CopilotBriefing>('/v1/copilot/briefing');
+  } catch {
+    return {
+      generated_at: new Date().toISOString(),
+      headline: 'Farm briefing is temporarily unavailable',
+      summary: 'Review alerts and feed plans while the assistant reconnects.',
+      priority: 'attention',
+      confidence: 'low',
+      actions: [{ label: 'Open alerts and devices', href: '/devices' }],
+      evidence: [{ label: 'Assistant status', value: 'API unavailable' }],
+    };
+  }
 }
