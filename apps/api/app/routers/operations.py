@@ -3,8 +3,16 @@ from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Query
 
-from app.repositories import alerts, culture_units, devices, feed_plans
-from app.schemas.operations import AlertSummary, CultureUnitSummary, DeviceSummary, FeedPlanSummary
+from app.repositories import alerts, create_feed_plan, culture_units, devices, update_feed_plan
+from app.repositories import list_feed_plans as load_feed_plans
+from app.schemas.operations import (
+    AlertSummary,
+    CultureUnitSummary,
+    DeviceSummary,
+    FeedPlanCreate,
+    FeedPlanSummary,
+    FeedPlanUpdate,
+)
 
 router = APIRouter(prefix="/v1", tags=["operations"])
 
@@ -38,12 +46,28 @@ async def list_feed_plans(
     ] = None,
     culture_unit_id: UUID | None = None,
 ) -> list[FeedPlanSummary]:
-    items = sorted(feed_plans(), key=lambda item: item.scheduled_for)
+    items = load_feed_plans()
     if status:
         items = [item for item in items if item.status == status]
     if culture_unit_id:
         items = [item for item in items if item.culture_unit_id == culture_unit_id]
     return items
+
+
+@router.post("/feed-plans", response_model=FeedPlanSummary, status_code=201)
+async def create_feed_plan_endpoint(payload: FeedPlanCreate) -> FeedPlanSummary:
+    unit = next((item for item in culture_units() if item.id == payload.culture_unit_id), None)
+    if unit is None:
+        raise HTTPException(status_code=404, detail="Culture unit not found")
+    return create_feed_plan(payload, unit.name)
+
+
+@router.patch("/feed-plans/{plan_id}", response_model=FeedPlanSummary)
+async def update_feed_plan_endpoint(plan_id: UUID, payload: FeedPlanUpdate) -> FeedPlanSummary:
+    item = update_feed_plan(plan_id, payload)
+    if item is None:
+        raise HTTPException(status_code=404, detail="Feed plan not found")
+    return item
 
 
 @router.get("/devices", response_model=list[DeviceSummary])

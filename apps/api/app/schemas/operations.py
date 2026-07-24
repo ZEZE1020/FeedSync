@@ -36,6 +36,20 @@ class FeedPlanSummary(BaseModel):
     rationale: list[str]
 
 
+class FeedPlanCreate(BaseModel):
+    culture_unit_id: UUID
+    scheduled_for: datetime
+    amount_kg: float = Field(gt=0, le=500)
+    feed_name: str = Field(min_length=2, max_length=120)
+    owner_name: str = Field(min_length=2, max_length=120)
+    rationale: list[str] = Field(default_factory=list, max_length=6)
+
+
+class FeedPlanUpdate(BaseModel):
+    status: Literal["approved", "awaiting_approval", "draft", "executed", "scheduled"] | None = None
+    actual_amount_kg: float | None = Field(default=None, gt=0, le=500)
+
+
 class DeviceSummary(BaseModel):
     id: UUID
     culture_unit_id: UUID
@@ -71,7 +85,7 @@ class DashboardMetrics(BaseModel):
 
 class DashboardSummary(BaseModel):
     generated_at: datetime
-    data_mode: Literal["demo"] = "demo"
+    data_mode: Literal["operational"] = "operational"
     metrics: DashboardMetrics
     water_context: WaterContextResponse | None
     context_error: str | None = None
