@@ -15,6 +15,20 @@ class Settings(BaseSettings):
     kijanispace_api_base_url: str = "https://api.kijanispace.eu"
     kijanispace_username: str | None = None
     kijanispace_password: SecretStr | None = None
+    feed_sync_db_path: str = "data/feed_sync.db"
+    feed_sync_cloud_sql_instance: str | None = None
+    feed_sync_db_name: str = "feedsync"
+    feed_sync_db_user: str = "feedsync_app"
+    feed_sync_db_password: SecretStr | None = None
+
+    @property
+    def database_url(self) -> str | None:
+        if not self.feed_sync_cloud_sql_instance or not self.feed_sync_db_password:
+            return None
+        return (
+            f"postgresql://{self.feed_sync_db_user}:{self.feed_sync_db_password.get_secret_value()}"
+            f"@/{self.feed_sync_db_name}?host=/cloudsql/{self.feed_sync_cloud_sql_instance}"
+        )
 
     @property
     def cors_origins(self) -> list[str]:
