@@ -1,0 +1,7 @@
+.git
+.next
+node_modules
+apps/api/.venv
+apps/api/data
+*.env
+coverage

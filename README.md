@@ -81,6 +81,19 @@ KIJANISPACE_PASSWORD=your-password
 The web app runs at `http://localhost:3000`; FastAPI runs at `http://localhost:3001`, with interactive
 API docs at `http://localhost:3001/docs`.
 
+### Run with Docker
+
+From the repository root, build and start both services:
+
+```bash
+docker compose up --build
+```
+
+The UI is at `http://localhost:3000` and the API docs are at `http://localhost:3001/docs`.
+The web container reaches the API on the internal Compose network; browser form requests use the
+mapped local API URL. Stop the stack with `docker compose down`. Add `-v` only when you also want
+to remove the local Docker volume containing MVP feed-plan data.
+
 ```bash
 curl http://localhost:3001/health
 curl "http://localhost:3001/v1/context/water?lat=-1.0&lon=33.0"
