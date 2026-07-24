@@ -18,6 +18,11 @@ import { SectionHeading } from '@/components/ui/section-heading';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { FeederTestPanel } from '@/components/ui/feeder-test-panel';
 import { getDashboardSummary, type ForecastDay } from '@/lib/api';
+import { getCopilotBriefing } from '@/lib/api';
+import { CopilotCard } from '@/components/ui/copilot-card';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 function formatForecastDay(dateStr: string, index: number): string {
   if (index === 0) return 'Today';
@@ -44,7 +49,30 @@ function ForecastStrip({ days }: { days: ForecastDay[] }) {
 }
 
 export default async function DashboardPage() {
-  const summary = await getDashboardSummary();
+  let summary;
+  try {
+    summary = await getDashboardSummary();
+  } catch {
+    summary = {
+      generated_at: new Date().toISOString(),
+      data_mode: 'operational' as const,
+      metrics: {
+        feed_planned_kg: 0,
+        scheduled_feed_events: 0,
+        active_culture_units: 0,
+        pond_count: 0,
+        cage_count: 0,
+        online_devices: 0,
+        total_devices: 0,
+      },
+      water_context: null,
+      context_error: 'Dashboard data is temporarily unavailable.',
+      alerts: [],
+      upcoming_feedings: [],
+    };
+  }
+
+  const briefing = await getCopilotBriefing();
   const { metrics, water_context, context_error, alerts, upcoming_feedings } = summary;
 
   const tempDisplay = water_context?.static.monthly_climatology_temperature_c != null
@@ -110,6 +138,7 @@ export default async function DashboardPage() {
           }
         />
       </section>
+      <CopilotCard briefing={briefing} />
 
       <div className="dashboard-grid">
         <section className="panel panel--context">

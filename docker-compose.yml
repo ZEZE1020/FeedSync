@@ -1,0 +1,33 @@
+services:
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    image: feedsync-api:local
+    env_file:
+      - .env
+    environment:
+      PORT: 8080
+      API_CORS_ORIGINS: http://localhost:3000
+      FEED_SYNC_DB_PATH: /app/data/feed_sync.db
+    ports:
+      - "3001:8080"
+    volumes:
+      - feed-sync-data:/app/data
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: http://localhost:3001
+    image: feedsync-web:local
+    environment:
+      FEED_SYNC_API_BASE_URL: http://api:8080
+    depends_on:
+      - api
+    ports:
+      - "3000:3000"
+
+volumes:
+  feed-sync-data:

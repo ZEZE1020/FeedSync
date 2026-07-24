@@ -1,0 +1,52 @@
+name: Deploy to GCP
+on:
+  workflow_run:
+    workflows: [CI]
+    branches: [main]
+    types: [completed]
+permissions:
+  contents: read
+  id-token: write
+env:
+  REGION: ${{ vars.GCP_REGION }}
+  PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+  REPOSITORY: feedsync
+  RUNTIME_SERVICE_ACCOUNT: feedsync-runtime@feedsync-503421.iam.gserviceaccount.com
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_DEPLOYER_SERVICE_ACCOUNT }}
+      - uses: google-github-actions/setup-gcloud@v3
+      - run: gcloud auth configure-docker "${REGION}-docker.pkg.dev" --quiet
+      - name: Build and push API
+        run: |
+          docker build -f apps/api/Dockerfile -t "${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/feedsync-api:${{ github.event.workflow_run.head_sha }}" apps/api
+          docker push "${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/feedsync-api:${{ github.event.workflow_run.head_sha }}"
+      - name: Deploy API
+        run: |
+          gcloud run deploy feedsync-api \
+            --image "${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/feedsync-api:${{ github.event.workflow_run.head_sha }}" \
+            --region "${REGION}" --project "${PROJECT_ID}" \
+            --service-account "${RUNTIME_SERVICE_ACCOUNT}" \
+            --set-secrets "KIJANISPACE_USERNAME=kijanispace-username:latest,KIJANISPACE_PASSWORD=kijanispace-password:latest" \
+            --allow-unauthenticated --quiet
+      - name: Build and push web
+        run: |
+          docker build -f apps/web/Dockerfile -t "${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/feedsync-web:${{ github.event.workflow_run.head_sha }}" .
+          docker push "${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/feedsync-web:${{ github.event.workflow_run.head_sha }}"
+      - name: Deploy web
+        run: |
+          API_URL="$(gcloud run services describe feedsync-api --region "${REGION}" --project "${PROJECT_ID}" --format='value(status.url)')"
+          gcloud run deploy feedsync-web \
+            --image "${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/feedsync-web:${{ github.event.workflow_run.head_sha }}" \
+            --region "${REGION}" --project "${PROJECT_ID}" \
+            --set-env-vars "FEED_SYNC_API_BASE_URL=${API_URL}" \
+            --allow-unauthenticated --quiet

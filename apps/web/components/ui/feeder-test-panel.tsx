@@ -68,13 +68,7 @@ export function FeederTestPanel({ initialTemp, initialChlorophyll }: Props) {
   const [baud, setBaud] = useState(9600);
   const [sendDisabled, setSendDisabled] = useState(true);
   const [log, setLog] = useState<LogEntry[]>([{ text: 'waiting for connection…', kind: 'info' }]);
-  const [mounted, setMounted] = useState(false);
-  const [serialSupported, setSerialSupported] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-    setSerialSupported('serial' in navigator);
-  }, []);
+  const serialSupported = typeof navigator !== 'undefined' && 'serial' in navigator;
 
   const portRef = useRef<SerialPort | null>(null);
   const writerRef = useRef<WritableStreamDefaultWriter | null>(null);
@@ -138,8 +132,6 @@ export function FeederTestPanel({ initialTemp, initialChlorophyll }: Props) {
     skip:   { border: '#e0714f', bg: 'rgba(224,113,79,0.08)',  text: '#e0714f' },
   };
   const dc = decisionColors[verdict.decision];
-
-  if (!mounted) return null;
 
   return (
     <>
