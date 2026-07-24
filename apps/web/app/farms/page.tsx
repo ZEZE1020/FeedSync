@@ -1,9 +1,10 @@
-import { ArrowUpRight, FishSymbol, MapPin, Plus, Ruler, Waves } from 'lucide-react';
+import { ArrowUpRight, FishSymbol, MapPin, Ruler, Waves } from 'lucide-react';
 
 import { AppShell } from '@/components/layout/app-shell';
 import { MetricCard } from '@/components/ui/metric-card';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { getCultureUnits } from '@/lib/api';
+import { CreateCultureUnitForm } from '@/components/ui/create-culture-unit-form';
 
 export const dynamic = 'force-dynamic';
 
@@ -68,9 +69,7 @@ async function FarmsContent() {
           <button type="button">Ponds</button>
           <button type="button">Cages</button>
         </div>
-        <button className="primary-button" type="button">
-          <Plus size={17} /> Add culture unit
-        </button>
+        <CreateCultureUnitForm />
       </div>
       <section className="metrics-grid metrics-grid--three" aria-label="Culture unit summary">
         <MetricCard

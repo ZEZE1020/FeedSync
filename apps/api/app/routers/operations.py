@@ -3,11 +3,12 @@ from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Query
 
-from app.repositories import alerts, create_feed_plan, culture_units, devices, update_feed_plan
+from app.repositories import alerts, create_culture_unit, create_feed_plan, culture_units, devices, update_feed_plan
 from app.repositories import list_feed_plans as load_feed_plans
 from app.schemas.operations import (
     AlertSummary,
     CultureUnitSummary,
+    CultureUnitCreate,
     DeviceSummary,
     FeedPlanCreate,
     FeedPlanSummary,
@@ -28,6 +29,11 @@ async def list_culture_units(
     if health:
         items = [item for item in items if item.health_status == health]
     return items
+
+
+@router.post("/culture-units", response_model=CultureUnitSummary, status_code=201)
+async def create_culture_unit_endpoint(payload: CultureUnitCreate) -> CultureUnitSummary:
+    return create_culture_unit(payload)
 
 
 @router.get("/culture-units/{unit_id}", response_model=CultureUnitSummary)

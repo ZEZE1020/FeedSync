@@ -1,14 +1,15 @@
 from datetime import UTC, datetime, timedelta
 from typing import Literal
-from uuid import UUID
+from uuid import UUID, uuid4
 
-from app.schemas.operations import AlertSummary, CultureUnitSummary, DeviceSummary, FeedPlanSummary
+from app.schemas.operations import AlertSummary, CultureUnitCreate, CultureUnitSummary, DeviceSummary, FeedPlanSummary
 
 FARM_ID = UUID("00000000-0000-4000-8000-000000000001")
 UNIT_IDS = [UUID(f"00000000-0000-4000-8000-{index:012d}") for index in range(101, 109)]
 FeedPlanStatus = Literal["approved", "awaiting_approval", "draft", "executed", "scheduled"]
 DeviceKind = Literal["dissolved_oxygen", "feeder_controller", "water_monitor"]
 DeviceStatus = Literal["offline", "online"]
+_created_units: list[CultureUnitSummary] = []
 
 
 def _now() -> datetime:
@@ -115,7 +116,18 @@ def culture_units() -> list[CultureUnitSummary]:
             latest_temperature_c=24.8,
             health_status="healthy",
         ),
-    ]
+    ] + _created_units
+
+
+def create_culture_unit(payload: CultureUnitCreate) -> CultureUnitSummary:
+    item = CultureUnitSummary(
+        id=uuid4(), farm_id=FARM_ID, name=payload.name, kind=payload.kind,
+        species=payload.species, stocked_fish_count=payload.stocked_fish_count,
+        estimated_biomass_kg=payload.estimated_biomass_kg, geometry_label=payload.geometry_label,
+        health_status="review",
+    )
+    _created_units.append(item)
+    return item
 
 
 def feed_plans() -> list[FeedPlanSummary]:
