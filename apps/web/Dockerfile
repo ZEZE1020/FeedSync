@@ -12,6 +12,9 @@ ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
 COPY . .
+# Next.js does not create this directory when the application has no static assets,
+# but the standalone runtime layout always includes it.
+RUN mkdir -p apps/web/public
 RUN pnpm --filter @feed-sync/web build
 FROM node:22-alpine AS runtime
 WORKDIR /app
