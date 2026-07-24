@@ -24,6 +24,15 @@ class CultureUnitSummary(BaseModel):
     sample_due_at: datetime | None = None
 
 
+class CultureUnitCreate(BaseModel):
+    name: str = Field(min_length=2, max_length=120)
+    kind: CultureKind
+    species: str = Field(min_length=2, max_length=120)
+    stocked_fish_count: int = Field(gt=0, le=1_000_000)
+    estimated_biomass_kg: float = Field(gt=0, le=1_000_000)
+    geometry_label: str = Field(min_length=3, max_length=160)
+
+
 class FeedPlanSummary(BaseModel):
     id: UUID
     culture_unit_id: UUID

@@ -91,6 +91,8 @@ export interface CultureUnit {
   latest_temperature_c: number | null; health_status: 'attention' | 'healthy' | 'review';
 }
 
+export const lakeVictoriaTimeZone = 'Africa/Nairobi';
+
 export interface Device {
   id: string; culture_unit_name: string; name: string; kind: string; status: 'online' | 'offline';
   latest_state: string; battery_label: string; last_seen_at: string;

@@ -12,6 +12,13 @@ traceable, reduce avoidable waste, and improve day-to-day visibility across pond
 > application foundations, API integration boundary, culture-system contracts, firmware examples,
 > and an MVP plan.
 
+## Business use case
+
+A farm manager onboards each pond or Lake Victoria cage with its species, stocking, biomass and
+geometry. Staff schedule feeds in East Africa Time (EAT, UTC+3), compare plans with KijaniSpace
+water context and local observations, then record outcomes. A culture unit must be onboarded before
+it can receive feed plans, devices, or attention alerts.
+
 ## Included
 
 - Next.js 16 App Router UI using Next's default Turbopack pipeline;
