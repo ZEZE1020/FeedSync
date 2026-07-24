@@ -8,10 +8,12 @@ the development stack is running.
 
 | Endpoint                          | UI consumer                                               | Data source                                      |
 | --------------------------------- | --------------------------------------------------------- | ------------------------------------------------ |
-| `GET /v1/dashboard/summary`       | Dashboard metrics, lake outlook, alerts and next feedings | Live KijaniSpace water context + demo operations |
+| `GET /v1/dashboard/summary`       | Dashboard metrics, lake outlook, alerts and next feedings | Live KijaniSpace water context + operational store |
 | `GET /v1/culture-units`           | Farms & units cards                                       | Demo repository                                  |
 | `GET /v1/culture-units/{unit_id}` | Future culture-unit detail                                | Demo repository                                  |
-| `GET /v1/feed-plans`              | Feed plan table and filters                               | Demo repository                                  |
+| `GET /v1/feed-plans`              | Feed plan table and filters                               | SQLite operational store (seeded on first run)   |
+| `POST /v1/feed-plans`             | Create schedule                                           | SQLite operational store                         |
+| `PATCH /v1/feed-plans/{plan_id}`  | Approve or record actual feed                            | SQLite operational store                         |
 | `GET /v1/devices`                 | Device status cards                                       | Demo repository                                  |
 | `GET /v1/alerts`                  | Dashboard/device attention states                         | Demo repository                                  |
 
@@ -22,9 +24,9 @@ Supported query filters:
 - devices: `status=offline|online`, `culture_unit_id`;
 - alerts: `severity=attention|critical|info`, `resolved=true|false`.
 
-Demo resources use stable UUIDs and realistic values but are not persisted. Responses that combine
-them set `data_mode: "demo"`. Add create/update endpoints only after selecting a database and defining
-authentication, tenant ownership, idempotency and audit requirements.
+Culture units, devices and alerts currently use stable seeded fixtures. Feed plans are persisted
+locally for the MVP. Before production multi-farm use, add tenant ownership, authenticated user IDs,
+idempotency and an audit trail.
 
 ## Context endpoints
 

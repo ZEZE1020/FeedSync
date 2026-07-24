@@ -25,9 +25,10 @@ The application runs at `http://localhost:3000`. Next.js uses Turbopack by defau
 | `/devices`   | Sensor and feeder health                            |
 | `/settings`  | Integration and regional preferences                |
 
-Route content is currently presentation data. The matching backend resources are documented in the
-[API contract](../../docs/api-contract.md). When connecting a page, use a typed server-side API
-module, expose loading/error/stale states and do not move KijaniSpace credentials into Next.js.
+Routes consume the FastAPI operational resources and live KijaniSpace context through typed API
+helpers. The matching backend resources are documented in the [API contract](../../docs/api-contract.md).
+Keep KijaniSpace credentials on the API server; only the public API base URL may be exposed to the web
+runtime.
 
 ## UI structure
 

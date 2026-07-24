@@ -23,3 +23,6 @@ __pycache__/
 firmware/**/build/
 firmware/**/*.hex
 firmware/**/*.elf
+
+# Local MVP operational state
+apps/api/data/
