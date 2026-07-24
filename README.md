@@ -112,6 +112,9 @@ actuation only after the decision workflow is clear.
 
 ## Documentation
 
+- [Documentation index](docs/README.md)
+- [API development guide](apps/api/README.md)
+- [Web development guide](apps/web/README.md)
 - [Architecture and boundaries](docs/architecture.md)
 - [Pond and cage alignment](docs/culture-systems.md)
 - [KijaniSpace API integration](docs/api-integration.md)
