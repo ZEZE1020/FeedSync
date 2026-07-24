@@ -10,7 +10,7 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "noEmit": true,
-    "baseUrl": ".",
+    // "baseUrl": ".",
     "paths": {
       "@/*": ["./*"]
     },
