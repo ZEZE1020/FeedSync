@@ -3,7 +3,11 @@ import { ArrowUpRight, FishSymbol, MapPin, Plus, Ruler, Waves } from 'lucide-rea
 import { AppShell } from '@/components/layout/app-shell';
 import { MetricCard } from '@/components/ui/metric-card';
 import { StatusBadge } from '@/components/ui/status-badge';
+import { getCultureUnits } from '@/lib/api';
 
+export const dynamic = 'force-dynamic';
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const units = [
   {
     biomass: '1,240 kg',
@@ -44,6 +48,12 @@ const units = [
 ] as const;
 
 export default function FarmsPage() {
+  return <FarmsContent />;
+}
+
+async function FarmsContent() {
+  const liveUnits = await getCultureUnits();
+  const units = liveUnits.map((unit) => ({ biomass: `${unit.estimated_biomass_kg.toLocaleString()} kg`, detail: unit.geometry_label, fish: `${unit.stocked_fish_count.toLocaleString()} fish`, kind: unit.kind === 'cage' ? 'Cage' : 'Pond', name: unit.name, status: unit.health_status === 'healthy' ? 'Healthy' : unit.health_status === 'review' ? 'Review sample' : 'Attention', temperature: unit.latest_temperature_c == null ? '—' : `${unit.latest_temperature_c}°C` }));
   return (
     <AppShell
       active="farms"
@@ -66,8 +76,8 @@ export default function FarmsPage() {
         <MetricCard
           icon={Waves}
           label="Culture units"
-          value="8"
-          detail="3 ponds · 5 cages"
+          value={String(liveUnits.length)}
+          detail={`${liveUnits.filter((u) => u.kind === 'pond').length} ponds · ${liveUnits.filter((u) => u.kind === 'cage').length} cages`}
           tone="water"
         />
         <MetricCard

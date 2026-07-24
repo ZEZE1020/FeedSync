@@ -4,7 +4,11 @@ import { AppShell } from '@/components/layout/app-shell';
 import { MetricCard } from '@/components/ui/metric-card';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { StatusBadge } from '@/components/ui/status-badge';
+import { getDevices } from '@/lib/api';
 
+export const dynamic = 'force-dynamic';
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const devices = [
   {
     battery: '86%',
@@ -41,6 +45,12 @@ const devices = [
 ] as const;
 
 export default function DevicesPage() {
+  return <DevicesContent />;
+}
+
+async function DevicesContent() {
+  const liveDevices = await getDevices();
+  const devices = liveDevices.map((device) => ({ battery: device.battery_label, kind: device.kind.replaceAll('_', ' '), location: device.culture_unit_name, name: device.name, reading: device.latest_state, status: device.status === 'online' ? 'Online' : 'Offline', lastSeen: new Date(device.last_seen_at).toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'short' }) }));
   return (
     <AppShell
       active="devices"
@@ -56,15 +66,15 @@ export default function DevicesPage() {
         <MetricCard
           icon={Radio}
           label="Connected devices"
-          value="6 / 7"
-          detail="Updated within 15 minutes"
+          value={`${liveDevices.filter((d) => d.status === 'online').length} / ${liveDevices.length}`}
+          detail="Reported by API"
           tone="green"
         />
         <MetricCard
           icon={Thermometer}
           label="Sensor observations"
-          value="142"
-          detail="Received in the last 24h"
+          value={String(liveDevices.length)}
+          detail="Registered field devices"
           tone="water"
         />
         <MetricCard
@@ -101,7 +111,7 @@ export default function DevicesPage() {
                   <span>
                     <BatteryMedium size={15} /> {device.battery}
                   </span>
-                  <span>{online ? '4 min ago' : '2h ago'}</span>
+                  <span>{device.lastSeen}</span>
                 </div>
               </article>
             );

@@ -1,8 +1,10 @@
-import { Bell, Cpu, LayoutDashboard, Search, Settings, Utensils, Waves } from 'lucide-react';
+import { Cpu, LayoutDashboard, Settings, Utensils, Waves } from 'lucide-react';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 import { Wordmark } from '@/components/brand/wordmark';
+import { GlobalSearch } from '@/components/ui/global-search';
+import { NotificationCenter } from '@/components/ui/notification-center';
 
 export type AppSection = 'dashboard' | 'devices' | 'farms' | 'feeding' | 'settings';
 
@@ -68,16 +70,9 @@ export function AppShell({ active, children, description, eyebrow, title }: AppS
           <div className="mobile-brand">
             <Wordmark compact href="/dashboard" />
           </div>
-          <button className="search-trigger" type="button">
-            <Search size={17} aria-hidden="true" />
-            <span>Search farms, cages or devices</span>
-            <kbd>⌘ K</kbd>
-          </button>
+          <GlobalSearch />
           <div className="topbar__actions">
-            <button className="icon-button" type="button" aria-label="Notifications">
-              <Bell size={19} aria-hidden="true" />
-              <span className="notification-dot" />
-            </button>
+            <NotificationCenter />
             <div className="profile-chip" aria-label="Current user">
               <span>AO</span>
               <div>
@@ -113,7 +108,7 @@ export function AppShell({ active, children, description, eyebrow, title }: AppS
               <h1>{title}</h1>
               <span>{description}</span>
             </div>
-            <time dateTime="2026-07-24">Friday, 24 July</time>
+            <time dateTime={new Date().toISOString().slice(0, 10)}>{new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}</time>
           </header>
           {children}
         </div>
