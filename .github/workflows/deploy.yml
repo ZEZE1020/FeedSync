@@ -48,5 +48,6 @@ jobs:
           gcloud run deploy feedsync-web \
             --image "${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/feedsync-web:${{ github.event.workflow_run.head_sha }}" \
             --region "${REGION}" --project "${PROJECT_ID}" \
+            --service-account "${RUNTIME_SERVICE_ACCOUNT}" \
             --set-env-vars "FEED_SYNC_API_BASE_URL=${API_URL}" \
             --allow-unauthenticated --quiet
