@@ -1,0 +1,29 @@
+{
+  "name": "feed-sync",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Decision support and IoT tooling for responsible cage and pond fish farming.",
+  "packageManager": "pnpm@10.7.1",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "pnpm --filter @feed-sync/web build",
+    "dev": "concurrently --kill-others -n web,api -c cyan,green \"pnpm dev:web\" \"pnpm dev:api\"",
+    "dev:api": "cd apps/api && uv run fastapi dev app/main.py --port 3001",
+    "dev:web": "pnpm --filter @feed-sync/web dev",
+    "format": "prettier --write . && uv run --project apps/api ruff format apps/api",
+    "format:check": "prettier --check . && uv run --project apps/api ruff format --check apps/api",
+    "lint": "pnpm --filter @feed-sync/web lint && uv run --project apps/api ruff check apps/api",
+    "test": "pnpm test:web && pnpm test:api",
+    "test:api": "uv run --project apps/api pytest apps/api/tests",
+    "test:web": "pnpm --filter @feed-sync/web test",
+    "typecheck": "pnpm --filter @feed-sync/web typecheck && pnpm typecheck:api",
+    "typecheck:api": "cd apps/api && uv run pyright app"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "prettier": "^3.6.2",
+    "typescript": "^5.8.3"
+  }
+}

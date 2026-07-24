@@ -1,0 +1,7 @@
+dist
+coverage
+node_modules
+pnpm-lock.yaml
+firmware/**/*.ino
+apps/api
+apps/web/next-env.d.ts
