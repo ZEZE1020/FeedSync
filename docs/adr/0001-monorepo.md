@@ -13,7 +13,7 @@ buildable with Arduino tooling.
 
 Use Next.js with pnpm for `apps/web`, FastAPI with uv for `apps/api`, and root scripts for a consistent
 developer workflow. Keep Arduino sketches in `firmware/`. Keep KijaniSpace behavior inside the API's
-integration layer and culture-system contracts inside its domain layer.
+integration layer and UI-facing contracts inside its schema layer.
 
 Next.js uses its native Turbopack pipeline. Vite is not added because it is not a supported Next.js
 build path and would create a second, competing application toolchain.

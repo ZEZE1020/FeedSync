@@ -9,7 +9,7 @@ interface WordmarkProps {
 export function Wordmark({ compact = false, href = '/' }: WordmarkProps) {
   return (
     <Link className="wordmark" href={href} aria-label="Feed Sync home">
-      <Image src="/brand/feed-sync-mark.svg" width={38} height={38} alt="" priority />
+      <Image src="/icon.svg" width={38} height={38} alt="" priority />
       {!compact && (
         <span>
           <strong>Feed Sync</strong>

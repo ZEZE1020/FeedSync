@@ -15,8 +15,7 @@ instead of rebuilding basic interface patterns.
 | Supporting colors | Water blue and soft lime | Environmental context and healthy states      |
 
 Fonts are bundled through Fontsource packages. No browser request to a third-party font CDN is
-required. The Feed Sync mark lives in `apps/web/public/brand/` and is reused by the Wordmark
-component and application icon.
+required. `apps/web/app/icon.svg` is the single source for both the application icon and Wordmark.
 
 ## Reusable components
 

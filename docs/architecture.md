@@ -27,7 +27,7 @@ API during the demo.
 - `apps/web` presents farm context and approval workflows. It never receives upstream secrets.
 - `apps/api` owns validation, orchestration, domain contracts, and vendor calls.
 - `apps/api/app/integrations` isolates the loosely typed KijaniSpace interface.
-- `apps/api/app/domain` represents ponds and cages through a shared `CultureUnit` abstraction.
+- `apps/api/app/schemas` defines the validated provider and UI-facing resource contracts.
 - `firmware` contains independently deployable Arduino sketches.
 
 ## Data principles
