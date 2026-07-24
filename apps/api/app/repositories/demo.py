@@ -2,7 +2,13 @@ from datetime import UTC, datetime, timedelta
 from typing import Literal
 from uuid import UUID, uuid4
 
-from app.schemas.operations import AlertSummary, CultureUnitCreate, CultureUnitSummary, DeviceSummary, FeedPlanSummary
+from app.schemas.operations import (
+    AlertSummary,
+    CultureUnitCreate,
+    CultureUnitSummary,
+    DeviceSummary,
+    FeedPlanSummary,
+)
 
 FARM_ID = UUID("00000000-0000-4000-8000-000000000001")
 UNIT_IDS = [UUID(f"00000000-0000-4000-8000-{index:012d}") for index in range(101, 109)]

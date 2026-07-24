@@ -3,12 +3,19 @@ from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Query
 
-from app.repositories import alerts, create_culture_unit, create_feed_plan, culture_units, devices, update_feed_plan
+from app.repositories import (
+    alerts,
+    create_culture_unit,
+    create_feed_plan,
+    culture_units,
+    devices,
+    update_feed_plan,
+)
 from app.repositories import list_feed_plans as load_feed_plans
 from app.schemas.operations import (
     AlertSummary,
-    CultureUnitSummary,
     CultureUnitCreate,
+    CultureUnitSummary,
     DeviceSummary,
     FeedPlanCreate,
     FeedPlanSummary,
