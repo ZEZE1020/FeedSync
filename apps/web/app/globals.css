@@ -634,7 +634,7 @@ h3,
 .page-actions {
   display: flex;
   gap: 1rem;
-  margin-top: -3.8rem;
+  margin-top: 0;
   margin-bottom: 1.8rem;
   align-items: center;
   justify-content: space-between;
@@ -1142,7 +1142,7 @@ h3,
   background: var(--surface);
 }
 
-@media (max-width: 1180px) {
+@media (max-width: 1280px) {
   .metrics-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -1154,6 +1154,7 @@ h3,
     display: none;
   }
 }
+
 
 @media (max-width: 860px) {
   .app-frame {
