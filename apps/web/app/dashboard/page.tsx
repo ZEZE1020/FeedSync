@@ -5,6 +5,7 @@ import {
   Droplets,
   FishSymbol,
   Gauge,
+  Leaf,
   MoreHorizontal,
   Utensils,
   Wind,
@@ -15,23 +16,62 @@ import { AppShell } from '@/components/layout/app-shell';
 import { MetricCard } from '@/components/ui/metric-card';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { StatusBadge } from '@/components/ui/status-badge';
+import { FeederTestPanel } from '@/components/ui/feeder-test-panel';
+import { getDashboardSummary, type ForecastDay } from '@/lib/api';
 
-const forecast = [
-  { day: 'Today', rain: '0 mm', temperature: '24.7°', wind: '2.1 m/s' },
-  { day: 'Sat', rain: '0 mm', temperature: '24.8°', wind: '3.5 m/s' },
-  { day: 'Sun', rain: '0 mm', temperature: '24.6°', wind: '4.7 m/s' },
-  { day: 'Mon', rain: '0 mm', temperature: '24.6°', wind: '3.3 m/s' },
-  { day: 'Tue', rain: '2.6 mm', temperature: '24.5°', wind: '1.3 m/s' },
-] as const;
+function formatForecastDay(dateStr: string, index: number): string {
+  if (index === 0) return 'Today';
+  return new Date(dateStr).toLocaleDateString('en-GB', { weekday: 'short' });
+}
 
-const feedings = [
-  { amount: '12.5 kg', name: 'Lake cage A', status: 'Due next', time: '08:30' },
-  { amount: '8.2 kg', name: 'North pond', status: 'Scheduled', time: '11:00' },
-  { amount: '4.8 kg', name: 'Nursery pond', status: 'Scheduled', time: '14:30' },
-] as const;
-
-export default function DashboardPage() {
+function ForecastStrip({ days }: { days: ForecastDay[] }) {
   return (
+    <div className="forecast-strip">
+      {days.map((day, index) => (
+        <article
+          className={index === 0 ? 'forecast-day forecast-day--active' : 'forecast-day'}
+          key={day.date}
+        >
+          <span>{formatForecastDay(day.date, index)}</span>
+          <CloudSun size={20} strokeWidth={1.6} aria-hidden="true" />
+          <strong>{day.temperature_mean_c.toFixed(1)}°</strong>
+          <small>{day.windspeed_mean_m_s.toFixed(1)} m/s</small>
+          <small>{day.precipitation_mm.toFixed(1)} mm</small>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+export default async function DashboardPage() {
+  const summary = await getDashboardSummary();
+  const { metrics, water_context, context_error, alerts, upcoming_feedings } = summary;
+
+  const tempDisplay = water_context?.static.monthly_climatology_temperature_c != null
+    ? `${water_context.static.monthly_climatology_temperature_c.toFixed(1)}°C`
+    : '—';
+
+  const depthDisplay = water_context?.static.bathymetry_depth_m != null
+    ? `${water_context.static.bathymetry_depth_m} m`
+    : '—';
+
+  const windDisplay = water_context?.forecast[0] != null
+    ? `${water_context.forecast[0].windspeed_mean_m_s.toFixed(1)} m/s`
+    : '—';
+
+  const chlorophyllDisplay = water_context?.static.chlorophyll_a_concentration_mg_m3 != null
+    ? `${water_context.static.chlorophyll_a_concentration_mg_m3.toFixed(2)} mg/m³`
+    : 'No satellite data';
+
+  const retrievedAt = water_context?.retrieved_at
+    ? new Date(water_context.retrieved_at).toLocaleTimeString('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    : null;
+
+  return (
+    <>
     <AppShell
       active="dashboard"
       title="Good morning, Amina"
@@ -41,29 +81,33 @@ export default function DashboardPage() {
         <MetricCard
           icon={Utensils}
           label="Feed planned today"
-          value="48.2 kg"
-          detail="6 events across 4 units"
+          value={`${metrics.feed_planned_kg} kg`}
+          detail={`${metrics.scheduled_feed_events} events across ${metrics.active_culture_units} units`}
           tone="coral"
         />
         <MetricCard
           icon={Droplets}
           label="Lake temperature"
-          value="24.7°C"
-          detail="Within preferred range"
+          value={tempDisplay}
+          detail="Monthly climatology · KijaniSpace"
           tone="water"
         />
         <MetricCard
           icon={FishSymbol}
           label="Active culture units"
-          value="8"
-          detail="3 ponds · 5 cages"
+          value={String(metrics.active_culture_units)}
+          detail={`${metrics.pond_count} ponds · ${metrics.cage_count} cages`}
           tone="lime"
         />
         <MetricCard
           icon={Cpu}
           label="Devices online"
-          value="6 / 7"
-          detail="1 sensor needs attention"
+          value={`${metrics.online_devices} / ${metrics.total_devices}`}
+          detail={
+            metrics.online_devices < metrics.total_devices
+              ? `${metrics.total_devices - metrics.online_devices} sensor needs attention`
+              : 'All devices online'
+          }
         />
       </section>
 
@@ -73,76 +117,95 @@ export default function DashboardPage() {
             eyebrow="KijaniSpace context"
             title="Lake Victoria outlook"
             action={
-              <StatusBadge dot tone="positive">
-                Live · 12 min ago
-              </StatusBadge>
+              retrievedAt ? (
+                <StatusBadge dot tone="positive">
+                  Live · {retrievedAt}
+                </StatusBadge>
+              ) : (
+                <StatusBadge dot tone="attention">
+                  Unavailable
+                </StatusBadge>
+              )
             }
           />
-          <div className="context-summary">
-            <div className="context-summary__icon">
-              <CloudSun size={30} strokeWidth={1.5} aria-hidden="true" />
-            </div>
-            <div>
-              <span>Open-water reference</span>
-              <strong>Stable conditions</strong>
-              <small>-1.0, 33.0 · Meteoblue</small>
-            </div>
-            <dl>
-              <div>
-                <dt>
-                  <Wind size={14} /> Wind
-                </dt>
-                <dd>2.1 m/s</dd>
+
+          {context_error ? (
+            <p className="data-note">{context_error}</p>
+          ) : water_context ? (
+            <>
+              <div className="context-summary">
+                <div className="context-summary__icon">
+                  <CloudSun size={30} strokeWidth={1.5} aria-hidden="true" />
+                </div>
+                <div>
+                  <span>Open-water reference</span>
+                  <strong>
+                    {water_context.forecast[0]?.temperature_mean_c != null
+                      ? `${water_context.forecast[0].temperature_mean_c.toFixed(1)}°C today`
+                      : 'Stable conditions'}
+                  </strong>
+                  <small>
+                    {water_context.coordinates.latitude}, {water_context.coordinates.longitude} ·{' '}
+                    {water_context.source}
+                  </small>
+                </div>
+                <dl>
+                  <div>
+                    <dt>
+                      <Wind size={14} /> Wind
+                    </dt>
+                    <dd>{windDisplay}</dd>
+                  </div>
+                  <div>
+                    <dt>
+                      <Gauge size={14} /> Depth
+                    </dt>
+                    <dd>{depthDisplay}</dd>
+                  </div>
+                  <div>
+                    <dt>
+                      <Leaf size={14} /> Chl-a
+                    </dt>
+                    <dd>{chlorophyllDisplay}</dd>
+                  </div>
+                </dl>
               </div>
-              <div>
-                <dt>
-                  <Gauge size={14} /> Depth
-                </dt>
-                <dd>68.4 m</dd>
-              </div>
-            </dl>
-          </div>
-          <div className="forecast-strip">
-            {forecast.map((day, index) => (
-              <article
-                className={index === 0 ? 'forecast-day forecast-day--active' : 'forecast-day'}
-                key={day.day}
-              >
-                <span>{day.day}</span>
-                <CloudSun size={20} strokeWidth={1.6} aria-hidden="true" />
-                <strong>{day.temperature}</strong>
-                <small>{day.wind}</small>
-                <small>{day.rain}</small>
-              </article>
-            ))}
-          </div>
+              <ForecastStrip days={water_context.forecast} />
+            </>
+          ) : null}
+
           <p className="data-note">
             Regional forecast context—not a substitute for local water sensors.
           </p>
         </section>
 
         <section className="panel attention-panel">
-          <SectionHeading title="Needs attention" eyebrow="2 items" />
-          <article className="attention-item">
-            <span className="attention-item__icon">
-              <Cpu size={18} />
-            </span>
-            <div>
-              <strong>DO sensor offline</strong>
-              <p>Lake cage C · Last seen 2h ago</p>
-            </div>
-            <ArrowUpRight size={17} aria-hidden="true" />
-          </article>
-          <article className="attention-item">
-            <span className="attention-item__icon attention-item__icon--soft">
-              <FishSymbol size={18} />
-            </span>
-            <div>
-              <strong>Biomass sample due</strong>
-              <p>North pond · Due today</p>
-            </div>
-            <ArrowUpRight size={17} aria-hidden="true" />
-          </article>
+          <SectionHeading title="Needs attention" eyebrow={`${alerts.length} items`} />
+          {alerts.map((alert) => (
+            <article className="attention-item" key={alert.id}>
+              <span
+                className={
+                  alert.severity === 'critical'
+                    ? 'attention-item__icon'
+                    : 'attention-item__icon attention-item__icon--soft'
+                }
+              >
+                {alert.title.toLowerCase().includes('sensor') ||
+                alert.title.toLowerCase().includes('device') ? (
+                  <Cpu size={18} />
+                ) : (
+                  <FishSymbol size={18} />
+                )}
+              </span>
+              <div>
+                <strong>{alert.title}</strong>
+                <p>
+                  {alert.culture_unit_name} · {alert.detail}
+                </p>
+              </div>
+              <ArrowUpRight size={17} aria-hidden="true" />
+            </article>
+          ))}
           <Link className="text-link" href="/devices">
             Review all alerts <ArrowUpRight size={15} />
           </Link>
@@ -151,7 +214,7 @@ export default function DashboardPage() {
         <section className="panel schedule-panel">
           <SectionHeading
             title="Today's feeding schedule"
-            eyebrow="24 July"
+            eyebrow={new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })}
             action={
               <Link className="text-link" href="/feeding">
                 View feed plans <ArrowUpRight size={15} />
@@ -159,32 +222,45 @@ export default function DashboardPage() {
             }
           />
           <div className="schedule-list">
-            {feedings.map((feeding, index) => (
-              <article className="schedule-row" key={feeding.name}>
-                <time>{feeding.time}</time>
-                <span
-                  className={index === 0 ? 'timeline-dot timeline-dot--active' : 'timeline-dot'}
-                />
-                <div>
-                  <strong>{feeding.name}</strong>
-                  <small>Tilapia grower pellets</small>
-                </div>
-                <span className="schedule-amount">{feeding.amount}</span>
-                <StatusBadge tone={index === 0 ? 'attention' : 'neutral'}>
-                  {feeding.status}
-                </StatusBadge>
-                <button
-                  className="row-action"
-                  type="button"
-                  aria-label={`More actions for ${feeding.name}`}
-                >
-                  <MoreHorizontal size={18} />
-                </button>
-              </article>
-            ))}
+            {upcoming_feedings.map((feeding, index) => {
+              const time = new Date(feeding.scheduled_for).toLocaleTimeString('en-GB', {
+                hour: '2-digit',
+                minute: '2-digit',
+              });
+              const isDue = feeding.status === 'scheduled' && index === 0;
+              return (
+                <article className="schedule-row" key={feeding.id}>
+                  <time>{time}</time>
+                  <span
+                    className={isDue ? 'timeline-dot timeline-dot--active' : 'timeline-dot'}
+                  />
+                  <div>
+                    <strong>{feeding.culture_unit_name}</strong>
+                    <small>{feeding.feed_name}</small>
+                  </div>
+                  <span className="schedule-amount">{feeding.amount_kg} kg</span>
+                  <StatusBadge tone={isDue ? 'attention' : 'neutral'}>
+                    {isDue ? 'Due next' : 'Scheduled'}
+                  </StatusBadge>
+                  <button
+                    className="row-action"
+                    type="button"
+                    aria-label={`More actions for ${feeding.culture_unit_name}`}
+                  >
+                    <MoreHorizontal size={18} />
+                  </button>
+                </article>
+              );
+            })}
           </div>
         </section>
       </div>
     </AppShell>
+
+    <FeederTestPanel
+      initialTemp={water_context?.static.monthly_climatology_temperature_c ?? null}
+      initialChlorophyll={water_context?.static.chlorophyll_a_concentration_mg_m3 ?? null}
+    />
+    </>
   );
 }
