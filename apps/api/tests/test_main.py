@@ -77,7 +77,7 @@ async def test_dashboard_summary_matches_ui_metrics() -> None:
 
     assert response.status_code == 200
     body = response.json()
-    assert body["data_mode"] == "demo"
+    assert body["data_mode"] == "operational"
     assert body["metrics"] == {
         "feed_planned_kg": 48.2,
         "scheduled_feed_events": 6,

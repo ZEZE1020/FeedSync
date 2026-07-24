@@ -1,10 +1,11 @@
+from datetime import UTC, datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
 
 from app.dependencies import get_kijanispace_client
 from app.integrations import Coordinates, KijaniSpaceClient, KijaniSpaceError
-from app.repositories import alerts, culture_units, devices, feed_plans
+from app.repositories import alerts, culture_units, devices, list_feed_plans
 from app.schemas.operations import DashboardMetrics, DashboardSummary
 from app.services import normalize_water_context
 from app.services.kijanispace_normalizer import KijaniPayloadError
@@ -19,7 +20,7 @@ async def dashboard_summary(
     lon: Annotated[float, Query(ge=28.95, le=36.7)] = 33.0,
 ) -> DashboardSummary:
     units = culture_units()
-    plans = sorted(feed_plans(), key=lambda item: item.scheduled_for)
+    plans = list_feed_plans()
     registered_devices = devices()
     water_context = None
     context_error = None
@@ -31,7 +32,7 @@ async def dashboard_summary(
         context_error = "Live KijaniSpace water context is currently unavailable"
 
     return DashboardSummary(
-        generated_at=plans[0].scheduled_for,
+        generated_at=plans[0].scheduled_for if plans else datetime.now(UTC),
         metrics=DashboardMetrics(
             feed_planned_kg=round(sum(plan.amount_kg for plan in plans), 1),
             scheduled_feed_events=len(plans),
