@@ -4,7 +4,7 @@
 devices.**
 
 Feed Sync is a KijaniSpace Hackathon project that combines location-based agro-climate context with
-farm observations, feeding records, and Arduino devices. Its goal is to make feeding decisions more
+farm observations, feeding records, and wazidev devices. Its goal is to make feeding decisions more
 traceable, reduce avoidable waste, and improve day-to-day visibility across ponds and cages.
 
 > [!NOTE]
@@ -25,7 +25,7 @@ it can receive feed plans, devices, or attention alerts.
 - FastAPI service managed with `uv`;
 - tested, server-side KijaniSpace agro-climate client;
 - discriminated pond and cage production-unit models;
-- Arduino water-monitor and bounded feeder-controller sketches;
+- wazidev water-monitor and bounded feeder-controller sketches;
 - architecture, integration, firmware, culture-system, and product documentation.
 
 ## System shape
@@ -33,12 +33,12 @@ it can receive feed plans, devices, or attention alerts.
 ```mermaid
 flowchart LR
     K[KijaniSpace API] --> A[FastAPI service]
-    S[Arduino sensors] --> G[Farm gateway]
+    S[wazidev sensors] --> G[Farm gateway]
     G --> A
     A --> W[Next.js web app]
     W -->|farmer approval| A
     A --> G
-    G --> F[Arduino feeder]
+    G --> F[wazidev feeder]
 ```
 
 KijaniSpace supplies regional, location-based context. Pond- or cage-level sensors supply local
@@ -169,3 +169,10 @@ pnpm build
 
 Document environment variables in `.env.example`. Never commit keys, tokens, personal information,
 or raw farm exports. Licensing and governance remain decisions for the project team.
+
+## Video Demonstration
+<video src="docs/vid.mp4" controls width="100%"></video>
+- When the RGB module light turns green it means the feeder is online.
+- When it turns blue it indicates that feeding is currently taking place.
+- When it turns red it indicates that feeding has stopped.
+- The servo motor shows the opening and closing of the valve that controls the feeder.
