@@ -59,7 +59,10 @@ FeedSync/
 ```
 
 ## Quick start
+## Deployed version
+You can access the deployed web app at [FeedSync](https://feedsync-web-975790420809.europe-west10.run.app/dashboard)
 
+## Local version
 ### Requirements
 
 - Node.js 22 or newer
