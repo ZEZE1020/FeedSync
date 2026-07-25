@@ -175,6 +175,15 @@ or raw farm exports. Licensing and governance remain decisions for the project t
 
 ## Video Demonstration
 <video src="docs/vid.mp4" controls width="100%"></video>
+
+
+https://github.com/user-attachments/assets/6e17c5f5-be83-48e9-bdc5-edb29f084185
+
+
+
+
+
+
 - When the RGB module light turns green it means the feeder is online.
 - When it turns blue it indicates that feeding is currently taking place.
 - When it turns red it indicates that feeding has stopped.
