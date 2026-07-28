@@ -16,7 +16,27 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      api: ${{ steps.filter.outputs.api }}
+      web: ${{ steps.filter.outputs.web }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            api:
+              - 'apps/api/**'
+              - '.github/workflows/ci.yml'
+            web:
+              - 'apps/web/**'
+              - '.github/workflows/ci.yml'
+
   api:
+    needs: changes
+    if: ${{ needs.changes.outputs.api == 'true' }}
     runs-on: ubuntu-latest
     defaults: { run: { working-directory: apps/api } }
     steps:
@@ -26,7 +46,10 @@ jobs:
       - run: uv sync --frozen
       - run: uv run pytest
       - run: uv run ruff check app tests
+
   web:
+    needs: changes
+    if: ${{ needs.changes.outputs.web == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -38,11 +61,16 @@ jobs:
       - run: pnpm --filter @feed-sync/web lint
       - run: pnpm --filter @feed-sync/web typecheck
       - run: pnpm --filter @feed-sync/web build
+
   containers:
+    needs: changes
+    if: ${{ needs.changes.outputs.api == 'true' || needs.changes.outputs.web == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Build API image
+        if: ${{ needs.changes.outputs.api == 'true' }}
         run: docker build -f apps/api/Dockerfile -t feedsync-api:ci apps/api
       - name: Build web image
+        if: ${{ needs.changes.outputs.web == 'true' }}
         run: docker build -f apps/web/Dockerfile -t feedsync-web:ci .

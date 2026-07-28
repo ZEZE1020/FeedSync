@@ -6,7 +6,6 @@ from psycopg_pool import AsyncConnectionPool
 
 from app.config import get_settings
 
-
 pool: AsyncConnectionPool | None = None
 
 
