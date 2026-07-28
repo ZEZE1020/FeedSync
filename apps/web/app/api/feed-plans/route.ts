@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-const API = process.env.FEED_SYNC_API_BASE_URL ?? 'http://localhost:3001';
+const API = process.env.FEED_SYNC_API_BASE_URL ?? 'http://localhost:8000';
 
 export async function POST(request: Request) {
   const response = await fetch(`${API}/v1/feed-plans`, {
