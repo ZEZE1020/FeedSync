@@ -1,10 +1,19 @@
 from collections.abc import AsyncIterator
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import Depends
+from psycopg import AsyncConnection
 
 from app.config import Settings, get_settings
+from app.db import get_pool
 from app.integrations import KijaniSpaceClient
+
+
+async def get_db_connection() -> AsyncIterator[AsyncConnection[Any]]:
+    """Yields a database connection from the active pool."""
+    pool = get_pool()
+    async with pool.connection() as connection:
+        yield connection
 
 
 async def get_kijanispace_client(
