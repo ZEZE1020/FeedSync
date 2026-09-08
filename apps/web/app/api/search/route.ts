@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-const API = process.env.FEED_SYNC_API_BASE_URL ?? process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3001';
+const API = process.env.FEED_SYNC_API_BASE_URL ?? process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8000';
 export async function GET(request: Request) {
   const resource = new URL(request.url).searchParams.get('resource');
   const endpoint = resource === 'devices' ? '/v1/devices' : '/v1/culture-units';

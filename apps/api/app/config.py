@@ -20,6 +20,10 @@ class Settings(BaseSettings):
     feed_sync_db_name: str = "feedsync"
     feed_sync_db_user: str = "feedsync_app"
     feed_sync_db_password: SecretStr | None = None
+    farm_manager_email: str | None = None
+    auth_secret_key: SecretStr = "a_very_secret_key_that_should_be_in_env"
+    auth_algorithm: str = "HS256"
+    auth_access_token_expire_minutes: int = 30
 
     @property
     def database_url(self) -> str | None:
